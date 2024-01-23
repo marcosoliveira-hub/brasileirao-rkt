@@ -1,0 +1,45 @@
+#lang racket
+(require examples)
+
+;; Desempenho -> (time: string, pontos: int, vitorias: int, saldo_gols: int)
+;; Resultado -> (time1: string, gols1: int, time2: string, gols2: int)
+
+(struct desempenho (time pontos vitorias saldo_gols) #:transparent)
+
+(struct resultado (time1 gols1 time2 gols2) #:transparent)
+
+#| (examples
+ (check-equal? (desempenho-time ((list "Sao-Paulo 1 Atletico-MG 2"
+                                       "Flamengo 2 Palmeiras 1"
+                                       "Palmeiras 0 Sao-Paulo 0"
+                                       "Atletico-MG 1 Flamengo 2")))
+               (list "Flamengo 6 2 2"
+                     "Atletico-MG 3 1 0"
+                     "Palmeiras 1 0 -1"
+                     "Sao-Paulo 1 0 -1"))) |#
+
+
+(define teste 1)
+
+#|
+;; Transforma a lista de strings da entrada em uma lista de resultados
+(define resultados (map string->resultado sresultados))
+
+
+;; Encontra o nome dos times
+;; ListaResultado -> ListaString
+(define times (encontra-times resultados))
+
+
+;; Calcula o desempenho de cada time
+;; ListaString ListaResultado -> ListaDesempenho
+(define desempenhos (calcula-desempenhos times resultados))
+
+
+;; Faz a classificao dos times pelo desempenho
+;; ListaDesempenho -> ListaDesempenho
+(define classificacao (classifica desempenhos))
+
+
+;; Transforma classificação (lista de desempenhos) em uma lista de strings
+(map desempenho->string classificacao) |#
