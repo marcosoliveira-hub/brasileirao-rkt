@@ -38,6 +38,7 @@
                                                 "Flamengo 2 Palmeiras 1"
                                                 "Palmeiras 0 Sao-Paulo 0"
                                                 "Atletico-MG 1 Flamengo 2")))
+
 ;; (lista resultado) -> (lista string)
 (define (encontra-times resultados lst-times)
   (define time1 (resultado-time1 (first resultados)))
@@ -50,3 +51,31 @@
     [else (if (empty? (rest resultados)) lst-times (encontra-times (rest resultados) lst-times))]))
 
 (define times (encontra-times resultados empty))
+
+#|(define calcula-pontos-jogo (time resultado)
+  (cond
+    [(equal? (resultado-time1 resultado) time)
+     (if (= (resultado-gols1) (resultado-gols2)) 1 (- resultado-gols2 (* 3 (resultado-gols1))))]
+    [(equal? (resultado-time2 resultado) time)
+     (if (= (resultado-gols1) (resultado-gols2)) 1 (- resultado-gols1 (* 3 (resultado-gols2))))]
+    [else 0]))
+
+(define calcula-vitorias-jogo (time resultado)
+  (cond
+    [(equal? (resultado-time1 resultado) time)
+     (if (> (resultado-gols1) (resultado-gols2)) 1 0]
+    [(equal? (resultado-time2 resultado) time)
+     (if (< (resultado-gols1) (resultado-gols2)) 1 0]
+    [else 0]))
+
+(define calcula-saldo-jogo (time resultado)
+  (cond
+    [(equal? (resultado-time1 resultado) time)
+     (- (resultado-gols1) (resultado-gols2))]
+    [(equal? (resultado-time1 resultado) time)
+     (- (resultado-gols2) (resultado-gols1))]
+    [else 0]))
+|#
+;(define (calcula-desempenhos times resultados))
+
+;(define (desempenhos (calcula-desempenhos times resultados)))
