@@ -33,12 +33,6 @@
     [else (nao-contem? s (rest lst))]))
 
 
-;; Transforma a lista de strings da entrada em uma lista de resultados
-(define resultados (map string->resultado (list "Sao-Paulo 1 Atletico-MG 2"
-                                                "Flamengo 2 Palmeiras 1"
-                                                "Palmeiras 0 Sao-Paulo 0"
-                                                "Atletico-MG 1 Flamengo 2")))
-
 ;; (lista resultado) -> (lista string)
 (define (encontra-times resultados lst-times)
   (define time1 (resultado-time1 (first resultados)))
@@ -49,8 +43,6 @@
     [(nao-contem? time1 lst-times) (encontra-times (rest resultados) (cons time1 lst-times))]
     [(nao-contem? time2 lst-times) (encontra-times (rest resultados) (cons time2 lst-times))]
     [else (if (empty? (rest resultados)) lst-times (encontra-times (rest resultados) lst-times))]))
-
-(define times (encontra-times resultados empty))
 
 
 ;; Se o time vence, recebe 3 pontos, se houver empate recebe 1 ponto, se perder não recebe pontos
@@ -127,12 +119,57 @@
 (define (atualiza-desempenhos resultados desempenhos-base)
   (define (atualiza resultado desempenhos-base)
     (atualiza-desempenho resultado desempenhos-base))
-  (foldl atualiza desempenhos-base resultados))
+  (foldr atualiza desempenhos-base resultados))
 
 (define (calcula-desempenhos resultados)
   (atualiza-desempenhos resultados empty))
 
-;; (lista string) (lista resultado) -> (lista desempenho)
-(define desempenhos (calcula-desempenhos resultados))
+(define (comparar-desempenho d1 d2)
+  (cond
+    [(> (desempenho-pontos d1) (desempenho-pontos d2))
+     #t]
+    [(< (desempenho-pontos d1) (desempenho-pontos d2))
+     #f]
+    [(> (desempenho-saldo-gols d1) (desempenho-saldo-gols d2))
+     #t]
+    [(< (desempenho-saldo-gols d1) (desempenho-saldo-gols d2))
+     #f]
+    [else (if (string<? (desempenho-time d1) (desempenho-time d2))
+              #t  ;; Caso time de desempenho d1 venha antes na ordem alfabetica
+              #f) ;; Caso contrario
+          ]))
 
-;; (lista desemepenho) -> (lista desempenho)
+(define (melhor-desempenho desempenhos)
+  (if (empty? desempenhos)
+      empty
+      (foldr (lambda (d1 d2)
+               (if (comparar-desempenho d1 d2) d1 d2))
+             (first desempenhos)
+             (rest desempenhos))))
+
+(define (ordenar-por-desempenho-geral desempenhos)
+  (define maior (melhor-desempenho desempenhos))
+  (if (empty? desempenhos)
+      empty
+      (cons maior (ordenar-por-desempenho-geral (filter (lambda (d) (not (equal? maior d))) desempenhos)))))
+
+(define (desempenho->string desempenho)
+  (string-append (desempenho-time desempenho) " "
+                 (number->string (desempenho-pontos desempenho)) " "
+                 (number->string (desempenho-vitorias desempenho)) " "
+                 (number->string (desempenho-saldo-gols desempenho))))
+
+;; ListaString -> ListaString
+(define (classifica-times sresultados)
+  ;; Transforma a lista de strings da entrada em uma lista de resultados
+  (define resultados (map string->resultado sresultados))
+  ;; Calcula o desempenho de cada time
+  ;; ListaString ListaResultado -> ListaDesempenho
+  (define desempenhos (calcula-desempenhos resultados))
+  ;; Faz a classificao dos times pelo desempenho
+  ;; ListaDesempenho -> ListaDesempenho
+  (define classificacao (ordenar-por-desempenho-geral desempenhos))
+  ;; Transforma classificação (lista de desempenhos) em uma lista de strings
+  (map desempenho->string classificacao))
+
+(display-lines (classifica-times (port->lines)))
