@@ -215,14 +215,19 @@
 ;; Verifica se o desempenho d1 de um time é melhor que o desempenho d2 de outro
 ;; (A ordem de comparacao e o primeiro time contra o segundo time no argumento)
 ;; O primeiro criterio a ser analisado e o numero de pontos, em caso de empate,
-;; o segundo criterio e o saldo de gols, em caso de empate, o terceiro e final
-;; criterio e a ordem alfabetica do nome do time
+;; o segundo criterio e o numero de vitorias, em caso de empate, o terceiro e o
+;; saldo de gols e por fim, em caso de empate em todos os parametros anteriores,
+;; o criterio final de desempate e a ordem alfabetica do nome do time
 ;; Desempenho Desempenho -> Boolean
 (define (comparar-desempenho d1 d2)
   (cond
     [(> (desempenho-pontos d1) (desempenho-pontos d2))
      #t]
     [(< (desempenho-pontos d1) (desempenho-pontos d2))
+     #f]
+    [(> (desempenho-vitorias d1) (desempenho-vitorias d2))
+     #t]
+    [(< (desempenho-vitorias d1) (desempenho-vitorias d2))
      #f]
     [(> (desempenho-saldo-gols d1) (desempenho-saldo-gols d2))
      #t]
@@ -242,6 +247,12 @@
                #t)
  (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 3 0 -1)
                                     (desempenho "Atletico-MG" 3 2 1))
+               #f)
+ (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 3 1 1)
+                                    (desempenho "Atletico-MG" 3 0 2))
+               #t)
+ (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 3 0 2)
+                                    (desempenho "Atletico-MG" 3 1 1))
                #f)
  (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 3 0 2)
                                     (desempenho "Atletico-MG" 3 0 1))
@@ -318,7 +329,7 @@
   ;; Transforma classificação (lista de desempenhos) em uma lista de strings
   (map desempenho->string classificacao))
 
-;(display-lines (classifica-times (port->lines)))
+(display-lines (classifica-times (port->lines)))
 
 (examples
  (check-equal? (classifica-times (list "Sao-Paulo 1 Atletico-MG 2"
