@@ -8,17 +8,6 @@
 
 (struct resultado (time1 gols1 time2 gols2) #:transparent)
 
-#| (examples
- (check-equal? (desempenho-time ((list "Sao-Paulo 1 Atletico-MG 2"
-                                       "Flamengo 2 Palmeiras 1"
-                                       "Palmeiras 0 Sao-Paulo 0"
-                                       "Atletico-MG 1 Flamengo 2")))
-               (list "Flamengo 6 2 2"
-                     "Atletico-MG 3 1 0"
-                     "Palmeiras 1 0 -1"
-                     "Sao-Paulo 1 0 -1"))) |#
-
-
 (define (string->resultado s)
   (define string-separada (string-split s))
   (resultado (first string-separada)
@@ -26,14 +15,21 @@
              (first (rest (rest string-separada)))
              (string->number (second (rest (rest string-separada))))))
 
+(examples
+ (check-equal? (string->resultado "Sao-Paulo 1 Atletico-MG 2")
+               (resultado "Sao-Paulo" 1 "Atletico-MG" 2)))
+
+;; Verifica se uma string está contida em uma lista de strings
+;; String lista-String -> Boolean
 (define (nao-contem? s lst)
   (cond
     [(empty? lst) #t]
     [(equal? s (first lst)) #f]
     [else (nao-contem? s (rest lst))]))
 
-
-;; (lista resultado) -> (lista string)
+#| Funcao auxiliar para encontrar os times, porem nao foi necessaria na implementacao final
+;; Armazena o nome de todos os times na lista de resultados em uma lista de strings
+;; lista-resultado -> lista-string
 (define (encontra-times resultados lst-times)
   (define time1 (resultado-time1 (first resultados)))
   (define time2 (resultado-time2 (first resultados)))
@@ -44,7 +40,17 @@
     [(nao-contem? time2 lst-times) (encontra-times (rest resultados) (cons time2 lst-times))]
     [else (if (empty? (rest resultados)) lst-times (encontra-times (rest resultados) lst-times))]))
 
+(examples
+ (check-equal? (encontra-times (list (resultado "Sao-Paulo" 1 "Atletico-MG" 2)
+                                     (resultado "Flamengo" 2 "Palmeiras" 1)
+                                     (resultado "Palmeiras" 0 "Sao-Paulo" 0)
+                                     (resultado "Atletico-MG" 1 "Flamengo" 2))
+                               empty)
+               (list "Sao-Paulo" "Atletico-MG" "Flamengo" "Palmeiras")))
+|#
 
+;; Calcula os pontos de um time em um jogo dado o resultado
+;; String Resultado -> Int
 ;; Se o time vence, recebe 3 pontos, se houver empate recebe 1 ponto, se perder não recebe pontos
 (define (calcula-pontos-jogo time resultado)
   (cond
@@ -56,6 +62,16 @@
          (if (> (resultado-gols2 resultado) (resultado-gols1 resultado)) 3 0))]
     [else 0]))
 
+(examples
+ (check-equal? (calcula-pontos-jogo "Sao-Paulo" (resultado "Sao-Paulo" 1 "Atletico-MG" 2)) 0)
+ (check-equal? (calcula-pontos-jogo "Sao-Paulo" (resultado "Sao-Paulo" 1 "Atletico-MG" 1)) 1)
+ (check-equal? (calcula-pontos-jogo "Sao-Paulo" (resultado "Sao-Paulo" 2 "Atletico-MG" 1)) 3)
+ (check-equal? (calcula-pontos-jogo "Atletico-MG" (resultado "Sao-Paulo" 2 "Atletico-MG" 1)) 0)
+ (check-equal? (calcula-pontos-jogo "Atletico-MG" (resultado "Sao-Paulo" 1 "Atletico-MG" 1)) 1)
+ (check-equal? (calcula-pontos-jogo "Atletico-MG" (resultado "Sao-Paulo" 1 "Atletico-MG" 2)) 3))
+
+;; Calcula as vitorias de um time em um jogo dado o resultado
+;; String Resultado -> Int
 ;; Se o time vencer recebe 1 vitoria, caso contrario recebe 0 vitorias
 (define (calcula-vitorias-jogo time resultado)
   (cond
@@ -65,6 +81,16 @@
      (if (< (resultado-gols1 resultado) (resultado-gols2 resultado)) 1 0)]
     [else 0]))
 
+(examples
+ (check-equal? (calcula-vitorias-jogo "Sao-Paulo" (resultado "Sao-Paulo" 1 "Atletico-MG" 2)) 0)
+ (check-equal? (calcula-vitorias-jogo "Sao-Paulo" (resultado "Sao-Paulo" 1 "Atletico-MG" 1)) 0)
+ (check-equal? (calcula-vitorias-jogo "Sao-Paulo" (resultado "Sao-Paulo" 2 "Atletico-MG" 1)) 1)
+ (check-equal? (calcula-vitorias-jogo "Atletico-MG" (resultado "Sao-Paulo" 2 "Atletico-MG" 1)) 0)
+ (check-equal? (calcula-vitorias-jogo "Atletico-MG" (resultado "Sao-Paulo" 1 "Atletico-MG" 1)) 0)
+ (check-equal? (calcula-vitorias-jogo "Atletico-MG" (resultado "Sao-Paulo" 1 "Atletico-MG" 2)) 1))
+
+;; Calcula o saldo de gols de um time em um jogo dado o resultado
+;; String Resultado -> Int
 ;; Saldo dado pela diferença de gols do time analisado e do time adversario
 (define (calcula-saldo-jogo time resultado)
   (cond
@@ -74,14 +100,37 @@
      (- (resultado-gols2 resultado) (resultado-gols1 resultado))]
     [else 0]))
 
+(examples
+ (check-equal? (calcula-saldo-jogo "Sao-Paulo" (resultado "Sao-Paulo" 1 "Atletico-MG" 2)) -1)
+ (check-equal? (calcula-saldo-jogo "Sao-Paulo" (resultado "Sao-Paulo" 1 "Atletico-MG" 1)) 0)
+ (check-equal? (calcula-saldo-jogo "Sao-Paulo" (resultado "Sao-Paulo" 2 "Atletico-MG" 1)) 1)
+ (check-equal? (calcula-saldo-jogo "Atletico-MG" (resultado "Sao-Paulo" 2 "Atletico-MG" 1)) -1)
+ (check-equal? (calcula-saldo-jogo "Atletico-MG" (resultado "Sao-Paulo" 1 "Atletico-MG" 1)) 0)
+ (check-equal? (calcula-saldo-jogo "Atletico-MG" (resultado "Sao-Paulo" 1 "Atletico-MG" 2)) 1))
 
+;; Procura o desemenho de um time em uma lista de desempenhos, se não encontrar retorna #f, caso contrario retorna o desempenho
+;; String ListaDesempenho -> Desempenho
 (define (encontra-desempenho time desempenhos)
   (define desempenho (filter (lambda (time-encontrado) (equal? time (desempenho-time time-encontrado))) desempenhos))
   (if (empty? desempenho)
       #f ; O time não está na lista
       (first desempenho))) ; Retorna o desempenho encontrado
 
+(examples
+ (check-equal? (encontra-desempenho "Sao-Paulo" (list (desempenho "Sao-Paulo" 1 0 0)
+                                                      (desempenho "Atletico-MG" 3 1 0)
+                                                      (desempenho "Palmeiras" 1 0 -1)
+                                                      (desempenho "Flamengo" 1 0 -1)))
+               (desempenho "Sao-Paulo" 1 0 0))
+ (check-equal? (encontra-desempenho "Botafogo" (list (desempenho "Sao-Paulo" 1 0 0)
+                                                     (desempenho "Atletico-MG" 3 1 0)
+                                                     (desempenho "Palmeiras" 1 0 -1)
+                                                     (desempenho "Flamengo" 1 0 -1)))
+               #f))
 
+;; Atualiza o desempenho de ambos os times dado um resultado e uma lista de desempenhos
+;; Se o time não estiver na lista de desempenhos, cria um novo desempenho para ele
+;; resultado lista-desempenho -> lista-desempenho
 (define (atualiza-desempenho resultado desempenhos)
   (define time1 (resultado-time1 resultado))
   (define time2 (resultado-time2 resultado))
@@ -116,14 +165,59 @@
                                            (equal? time2 (desempenho-time d)))))
                       desempenhos))))
 
+(examples
+ (check-equal?
+  (atualiza-desempenho (resultado "Sao-Paulo" 1 "Atletico-MG" 2)
+                       (list (desempenho "Sao-Paulo" 1 0 0)
+                             (desempenho "Atletico-MG" 3 1 0)
+                             (desempenho "Palmeiras" 1 0 -1)
+                             (desempenho "Flamengo" 1 0 -1)))
+  (list (desempenho "Sao-Paulo" 1 0 -1)
+        (desempenho "Atletico-MG" 6 2 1)
+        (desempenho "Palmeiras" 1 0 -1)
+        (desempenho "Flamengo" 1 0 -1)))
+
+ (check-equal?
+  (atualiza-desempenho (resultado "Sao-Paulo" 1 "Botafogo" 1)
+                       (list (desempenho "Sao-Paulo" 1 0 0)
+                             (desempenho "Atletico-MG" 3 1 0)
+                             (desempenho "Palmeiras" 1 0 -1)
+                             (desempenho "Flamengo" 1 0 -1)))
+
+  (list (desempenho "Sao-Paulo" 2 0 0)
+        (desempenho "Botafogo" 1 0 0)
+        (desempenho "Atletico-MG" 3 1 0)
+        (desempenho "Palmeiras" 1 0 -1)
+        (desempenho "Flamengo" 1 0 -1))))
+
+;; Atualiza os desempenhos de todos os times dado uma lista de resultados e uma lista de desempenhos
+;; lista-resultado lista-desempenho -> lista-desempenho
 (define (atualiza-desempenhos resultados desempenhos-base)
   (define (atualiza resultado desempenhos-base)
     (atualiza-desempenho resultado desempenhos-base))
   (foldr atualiza desempenhos-base resultados))
 
+(examples
+ (check-equal?
+  (atualiza-desempenhos (list (resultado "Sao-Paulo" 1 "Atletico-MG" 2)
+                              (resultado "Flamengo" 2 "Palmeiras" 1)
+                              (resultado "Palmeiras" 0 "Sao-Paulo" 0)
+                              (resultado "Atletico-MG" 1 "Flamengo" 2))
+                        empty)
+  (list (desempenho "Sao-Paulo" 1 0 -1)
+        (desempenho "Atletico-MG" 3 1 0)
+        (desempenho "Flamengo" 6 2 2)
+        (desempenho "Palmeiras" 1 0 -1))))
+
 (define (calcula-desempenhos resultados)
   (atualiza-desempenhos resultados empty))
 
+;; Verifica se o desempenho d1 de um time é melhor que o desempenho d2 de outro
+;; (A ordem de comparacao e o primeiro time contra o segundo time no argumento)
+;; O primeiro criterio a ser analisado e o numero de pontos, em caso de empate,
+;; o segundo criterio e o saldo de gols, em caso de empate, o terceiro e final
+;; criterio e a ordem alfabetica do nome do time
+;; Desempenho Desempenho -> Boolean
 (define (comparar-desempenho d1 d2)
   (cond
     [(> (desempenho-pontos d1) (desempenho-pontos d2))
@@ -139,6 +233,26 @@
               #f) ;; Caso contrario
           ]))
 
+(examples
+ (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 1 0 -1)
+                                    (desempenho "Atletico-MG" 6 2 1))
+               #f)
+ (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 4 0 -1)
+                                    (desempenho "Atletico-MG" 1 2 1))
+               #t)
+ (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 3 0 -1)
+                                    (desempenho "Atletico-MG" 3 2 1))
+               #f)
+ (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 3 0 2)
+                                    (desempenho "Atletico-MG" 3 0 1))
+               #t)
+ (check-equal? (comparar-desempenho (desempenho "Sao-Paulo" 3 0 2)
+                                    (desempenho "Atletico-MG" 3 0 2))
+               #f)
+ (check-equal? (comparar-desempenho (desempenho "Atletico-MG" 3 0 2)
+                                    (desempenho "Sao-Paulo" 3 0 2)) #t))
+
+
 (define (melhor-desempenho desempenhos)
   (if (empty? desempenhos)
       empty
@@ -147,17 +261,49 @@
              (first desempenhos)
              (rest desempenhos))))
 
+(examples
+ (check-equal? (melhor-desempenho (list (desempenho "Sao-Paulo" 1 0 -1)
+                                        (desempenho "Atletico-MG" 6 2 1)
+                                        (desempenho "Palmeiras" 1 0 -1)
+                                        (desempenho "Flamengo" 6 2 1)))
+               (desempenho "Atletico-MG" 6 2 1))
+ (check-equal? (melhor-desempenho (list (desempenho "Sao-Paulo" 1 0 -1)
+                                        (desempenho "Atletico-MG" 1 2 3)
+                                        (desempenho "Palmeiras" 1 0 -1)
+                                        (desempenho "Flamengo" 1 2 1))) (desempenho "Atletico-MG" 1 2 3))
+ (check-equal? (melhor-desempenho (list (desempenho "Sao-Paulo" 1 0 3)
+                                        (desempenho "Botafogo" 1 2 3)
+                                        (desempenho "Palmeiras" 1 0 3)
+                                        (desempenho "Flamengo" 1 2 3))) (desempenho "Botafogo" 1 2 3)))
+
+;; Ordena uma lista de desempenhos pelo desempenho geral de cada time
+;; lista-desempenho -> lista-desempenho
 (define (ordenar-por-desempenho-geral desempenhos)
   (define maior (melhor-desempenho desempenhos))
   (if (empty? desempenhos)
       empty
       (cons maior (ordenar-por-desempenho-geral (filter (lambda (d) (not (equal? maior d))) desempenhos)))))
 
+(examples
+ (check-equal? (ordenar-por-desempenho-geral (list (desempenho "Sao-Paulo" 1 0 -1)
+                                                   (desempenho "Atletico-MG" 6 2 1)
+                                                   (desempenho "Palmeiras" 1 0 -1)
+                                                   (desempenho "Flamengo" 6 2 1)))
+               (list (desempenho "Atletico-MG" 6 2 1)
+                     (desempenho "Flamengo" 6 2 1)
+                     (desempenho "Palmeiras" 1 0 -1)
+                     (desempenho "Sao-Paulo" 1 0 -1))))
+
+;; Transforma um desempenho em uma string
+;; Desempenho -> String
 (define (desempenho->string desempenho)
   (string-append (desempenho-time desempenho) " "
                  (number->string (desempenho-pontos desempenho)) " "
                  (number->string (desempenho-vitorias desempenho)) " "
                  (number->string (desempenho-saldo-gols desempenho))))
+
+(examples
+ (check-equal? (desempenho->string (desempenho "Sao-Paulo" 1 0 -1)) "Sao-Paulo 1 0 -1"))
 
 ;; ListaString -> ListaString
 (define (classifica-times sresultados)
@@ -172,4 +318,30 @@
   ;; Transforma classificação (lista de desempenhos) em uma lista de strings
   (map desempenho->string classificacao))
 
-(display-lines (classifica-times (port->lines)))
+;(display-lines (classifica-times (port->lines)))
+
+(examples
+ (check-equal? (classifica-times (list "Sao-Paulo 1 Atletico-MG 2"
+                                       "Flamengo 2 Palmeiras 1"
+                                       "Palmeiras 0 Sao-Paulo 0"
+                                       "Atletico-MG 1 Flamengo 2"))
+               (list "Flamengo 6 2 2"
+                     "Atletico-MG 3 1 0"
+                     "Palmeiras 1 0 -1"
+                     "Sao-Paulo 1 0 -1"))
+ (check-equal? (classifica-times (list "Sao-Paulo 1 Atletico-MG 1"
+                                       "Flamengo 1 Palmeiras 1"
+                                       "Palmeiras 1 Sao-Paulo 1"
+                                       "Atletico-MG 1 Flamengo 1"))
+               (list "Atletico-MG 2 0 0"
+                     "Flamengo 2 0 0"
+                     "Palmeiras 2 0 0"
+                     "Sao-Paulo 2 0 0"))
+ (check-equal? (classifica-times (list "Sao-Paulo 5 Atletico-MG 0"
+                                       "Flamengo 3 Palmeiras 0"
+                                       "Palmeiras 1 Sao-Paulo 0"
+                                       "Atletico-MG 2 Flamengo 0"))
+               (list "Sao-Paulo 3 1 4"
+                     "Flamengo 3 1 1"
+                     "Palmeiras 3 1 -2"
+                     "Atletico-MG 3 1 -3")))
