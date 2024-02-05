@@ -15,6 +15,8 @@
 
 (struct resultado (time1 gols1 time2 gols2) #:transparent)
 
+;; Transforma uma string de um resultado em uma struct do tipo resultado
+;; String -> Resultado
 (define (string->resultado s)
   (define string-separada (string-split s))
   (resultado (first string-separada)
@@ -197,12 +199,11 @@
 (define (calcula-desempenhos resultados)
   (atualiza-desempenhos resultados empty))
 
-;; Verifica se o desempenho d1 de um time é melhor que o desempenho d2 de outro
-;; (A ordem de comparacao e o primeiro time contra o segundo time no argumento)
-;; O primeiro criterio a ser analisado e o numero de pontos, em caso de empate,
-;; o segundo criterio e o numero de vitorias, em caso de empate, o terceiro e o
+;; Verifica se o desempenho d1 de um time é melhor que o desempenho d2 de outro time.
+;; O primeiro criterio a ser analisado é o numero de pontos, em caso de empate,
+;; o segundo criterio é o numero de vitorias, em caso de empate, o terceiro é o
 ;; saldo de gols e por fim, em caso de empate em todos os parametros anteriores,
-;; o criterio final de desempate e a ordem alfabetica do nome do time
+;; o criterio final de desempate é a ordem alfabetica do nome do time
 ;; Desempenho Desempenho -> Boolean
 (define (comparar-desempenho d1 d2)
   (cond
@@ -219,8 +220,8 @@
     [(< (desempenho-saldo-gols d1) (desempenho-saldo-gols d2))
      #f]
     [else (if (string<? (desempenho-time d1) (desempenho-time d2))
-              #t  ;; Caso time de desempenho d1 venha antes na ordem alfabetica
-              #f) ;; Caso contrario
+              #t  ;; Caso time de desempenho d1 venha antes na ordem alfabética
+              #f) ;; Caso contrário
           ]))
 
 (examples
@@ -248,7 +249,8 @@
  (check-equal? (comparar-desempenho (desempenho "Atletico-MG" 3 0 2)
                                     (desempenho "Sao-Paulo" 3 0 2)) #t))
 
-
+;; Retorna o melhor desempenho dentre todos em um conjunto de desempenhos
+;; lista-desempenho -> desempenho
 (define (melhor-desempenho desempenhos)
   (if (empty? desempenhos)
       empty
