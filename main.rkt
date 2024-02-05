@@ -1,10 +1,17 @@
 #lang racket
-(require examples)
+(require examples) ;; https://github.com/malbarbo/racket-test-examples
+
+;; 6902 - Paradigma de Programação Lógica e Funcional
+;; Acadêmico: Marcos Vinicius de Oliveira
+;; RA: 124408
+;; Prof. Marco A. L. Barbosa
+;; Tabela do Brasileirão
 
 ;; Desempenho -> (time: string, pontos: int, vitorias: int, saldo_gols: int)
-;; Resultado -> (time1: string, gols1: int, time2: string, gols2: int)
 
 (struct desempenho (time pontos vitorias saldo-gols) #:transparent)
+
+;; Resultado -> (time1: string, gols1: int, time2: string, gols2: int)
 
 (struct resultado (time1 gols1 time2 gols2) #:transparent)
 
@@ -26,28 +33,6 @@
     [(empty? lst) #t]
     [(equal? s (first lst)) #f]
     [else (nao-contem? s (rest lst))]))
-
-#| Funcao auxiliar para encontrar os times, porem nao foi necessaria na implementacao final
-;; Armazena o nome de todos os times na lista de resultados em uma lista de strings
-;; lista-resultado -> lista-string
-(define (encontra-times resultados lst-times)
-  (define time1 (resultado-time1 (first resultados)))
-  (define time2 (resultado-time2 (first resultados)))
-  (cond
-    [(and (nao-contem? time1 lst-times) (nao-contem? time2 lst-times) lst-times)
-     (encontra-times (rest resultados) (append (list time1 time2) lst-times))]
-    [(nao-contem? time1 lst-times) (encontra-times (rest resultados) (cons time1 lst-times))]
-    [(nao-contem? time2 lst-times) (encontra-times (rest resultados) (cons time2 lst-times))]
-    [else (if (empty? (rest resultados)) lst-times (encontra-times (rest resultados) lst-times))]))
-
-(examples
- (check-equal? (encontra-times (list (resultado "Sao-Paulo" 1 "Atletico-MG" 2)
-                                     (resultado "Flamengo" 2 "Palmeiras" 1)
-                                     (resultado "Palmeiras" 0 "Sao-Paulo" 0)
-                                     (resultado "Atletico-MG" 1 "Flamengo" 2))
-                               empty)
-               (list "Sao-Paulo" "Atletico-MG" "Flamengo" "Palmeiras")))
-|#
 
 ;; Calcula os pontos de um time em um jogo dado o resultado
 ;; String Resultado -> Int
@@ -316,16 +301,21 @@
 (examples
  (check-equal? (desempenho->string (desempenho "Sao-Paulo" 1 0 -1)) "Sao-Paulo 1 0 -1"))
 
+;; Classifica os times de acordo com os resultados dos jogos
 ;; ListaString -> ListaString
 (define (classifica-times sresultados)
+
   ;; Transforma a lista de strings da entrada em uma lista de resultados
   (define resultados (map string->resultado sresultados))
+
   ;; Calcula o desempenho de cada time
-  ;; ListaString ListaResultado -> ListaDesempenho
+  ;; ListaResultado -> ListaDesempenho
   (define desempenhos (calcula-desempenhos resultados))
+
   ;; Faz a classificao dos times pelo desempenho
   ;; ListaDesempenho -> ListaDesempenho
   (define classificacao (ordenar-por-desempenho-geral desempenhos))
+
   ;; Transforma classificação (lista de desempenhos) em uma lista de strings
   (map desempenho->string classificacao))
 
